@@ -1,11 +1,10 @@
-package org.onlychain.wallet.bean;
+package org.onlychain.bean;
 
 
 
 import org.onlychain.utils.Leb128Utils;
 import org.onlychain.utils.OcMath;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 

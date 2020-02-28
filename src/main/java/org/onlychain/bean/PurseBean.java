@@ -1,4 +1,4 @@
-package org.onlychain.wallet.walletbean;
+package org.onlychain.bean;
 
 import java.util.List;
 

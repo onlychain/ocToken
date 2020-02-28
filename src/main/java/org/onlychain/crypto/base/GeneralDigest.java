@@ -1,4 +1,4 @@
-package org.onlychain.crypto.utils;
+package org.onlychain.crypto.base;
 
 
 
@@ -11,19 +11,12 @@ public abstract class GeneralDigest implements ExtendedDigest, Memoable
 
     private long    byteCount;
 
-    /**
-     * Standard constructor
-     */
+
     protected GeneralDigest()
     {
         xBufOff = 0;
     }
 
-    /**
-     * Copy constructor.  We are using copy constructors in place
-     * of the Object.clone() interface as this interface is not
-     * supported by J2ME.
-     */
     protected GeneralDigest(GeneralDigest t)
     {
         copyIn(t);

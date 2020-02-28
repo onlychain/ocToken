@@ -70,15 +70,36 @@ public final class Signature {
 	}
 
 	public byte[] serialize() {
-		byte[] buffer = new byte[70];
+		byte[] R = ModP.toByteArray(r);
+		byte[] S = ModP.toByteArray(s);
+		int rlen = 33;
+		do {
+			if (R[33 - rlen] < 0) break;
+			rlen--;
+		} while (R[32 - rlen] == 0);
+		int slen = 33;
+		do {
+			if (S[33 - slen] < 0) break;
+			slen--;
+		} while (S[32 - slen] == 0);
+
+		byte[] buffer = new byte[6 + rlen + slen];
 		buffer[0] = 0x30;
-		buffer[1] = 68;
+		buffer[1] = (byte)(4 + rlen + slen);
 		buffer[2] = 2;
-		buffer[3] = 32;
-		System.arraycopy(ModP.toByteArray(r), 0, buffer, 4, 32);
-		buffer[36] = 2;
-		buffer[37] = 32;
-		System.arraycopy(ModP.toByteArray(s), 0, buffer, 38, 32);
+		buffer[3] = (byte)rlen;
+		if (rlen == 33) {
+			System.arraycopy(R, 0, buffer, 5, 32);
+		} else {
+			System.arraycopy(R, 32 - rlen, buffer, 4, rlen);
+		}
+		buffer[4 + rlen] = 2;
+		buffer[5 + rlen] = (byte)slen;
+		if (slen == 33) {
+			System.arraycopy(S, 0, buffer, 7 + rlen, 32);
+		} else {
+			System.arraycopy(S, 32 - slen, buffer, 6 + rlen, slen);
+		}
 		return buffer;
 	}
 }

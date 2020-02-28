@@ -20,7 +20,7 @@ public final class Secp256k1 {
 
 	public static byte[] createPrivateKey() {
 		while (true) {
-			BigInteger k = new BigInteger(32, RNG);
+			BigInteger k = new BigInteger(256, RNG);
 			if (k.equals(BigInteger.ZERO) || k.compareTo(ModN.N) >= 0) continue;
 			return ModP.toByteArray(k);
 		}

@@ -1,13 +1,10 @@
 package org.onlychain.crypto;
 
 
-import org.onlychain.crypto.utils.GeneralDigest;
-import org.onlychain.crypto.utils.Memoable;
+import org.onlychain.crypto.base.GeneralDigest;
+import org.onlychain.crypto.base.Memoable;
 
-/**
- * implementation of RIPEMD see,
- * http://www.esat.kuleuven.ac.be/~bosselae/ripemd160.html
- */
+
 public class RIPEMD160Digest extends GeneralDigest
 {
     private static final int DIGEST_LENGTH = 20;
@@ -17,18 +14,12 @@ public class RIPEMD160Digest extends GeneralDigest
     private int[] X = new int[16];
     private int xOff;
 
-    /**
-     * Standard constructor
-     */
+
     public RIPEMD160Digest()
     {
         reset();
     }
 
-    /**
-     * Copy constructor.  This will copy the state of the provided
-     * message digest.
-     */
     public RIPEMD160Digest(RIPEMD160Digest t)
     {
         super(t);
