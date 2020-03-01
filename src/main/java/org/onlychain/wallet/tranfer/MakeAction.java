@@ -15,22 +15,27 @@ public class MakeAction {
     AccountBean mAccountBean;
     List<PurseBean.RecordBean> coinList;
     List<OutBean> outList;
-    public MakeAction(AccountBean mAccountBean, List<PurseBean.RecordBean> coinList, List<OutBean> outList) {
+    int actionType=1;
+
+
+    public MakeAction(AccountBean mAccountBean,int actionType,List<PurseBean.RecordBean> coinList, List<OutBean> outList) {
         this.mAccountBean = mAccountBean;
+        this.actionType=actionType;
         this.coinList = coinList;
         this.outList=outList;
     }
-
     /**
      * 普通交易
      * @return
      */
-    public BaseActionBean createActionForType1(String height){
-        HeadBean head=new HeadBean(1,setVInBody()+setVOutBody());
+    public BaseActionBean createAction(String height){
+        HeadBean head=new HeadBean(actionType,setVInBody()+setVOutBody());
         HeadBean.EndBean mEndBean = new HeadBean.EndBean(height,mAccountBean.getPublicKey(),head.toString());
+        if(actionType==4)
+            mEndBean.setLockTimeAdd1Year();
 
         String result=mEndBean.getResult();
-        String sigStr = OcMath.toHexStringNoPrefix(Secp256k1.sign(mAccountBean.getPrivateKeyBin(),  Hash.sha256(Hash.sha256(OcMath.hexStringToByteArray(result)))).serialize());
+        String sigStr = OcMath.toHexStringNoPrefix(Secp256k1.sign(mAccountBean.getPrivateKeyBin(), WalletUtils.getTxIdBin(result)).serialize());
         BaseActionBean mBaseActionBean=new BaseActionBean();
         mBaseActionBean.setMessage(result);
         mBaseActionBean.setSigStr(sigStr);
@@ -38,23 +43,6 @@ public class MakeAction {
         return mBaseActionBean;
     }
 
-    /**
-     * 开通权益
-     * @param height
-     * @return
-     */
-    public BaseActionBean createActionForType4(String height){
-        HeadBean head=new HeadBean(4,setVInBody()+setVOutBody());
-        HeadBean.EndBean mEndBean = new HeadBean.EndBean(height,mAccountBean.getPublicKey(),head.toString());
-        mEndBean.setLockTimeAdd1Year();
-
-        String result=mEndBean.getResult();
-        String sigStr = OcMath.toHexStringNoPrefix(Secp256k1.sign(mAccountBean.getPrivateKeyBin(), OcMath.hexStringToByteArray(result)).serialize());
-        BaseActionBean mBaseActionBean=new BaseActionBean();
-        mBaseActionBean.setMessage(result+sigStr);
-//        mBaseActionBean.setTxid(WalletUtils.getTxId(result));
-        return mBaseActionBean;
-    }
 
       private String setVInBody(){
         StringBuffer result=new StringBuffer();
@@ -62,10 +50,10 @@ public class MakeAction {
         String number= Leb128Utils.encodeUleb128(coinList.size());
         for(PurseBean.RecordBean coin:coinList)
         {
-            String txN=Leb128Utils.encodeUleb128(coin.getN());
+//            String txN=Leb128Utils.encodeUleb128(coin.getN());
+            String txN=OcMath.toHexStringNoPrefixZeroPadded(new BigInteger(String.valueOf(coin.getN())),2);
             String scriptContent = coin.getTxId()+txN+Script.getLockScript(mAccountBean.getAddressNoPrefix());
-            System.out.println("text--------------"+scriptContent);
-
+//            System.out.println("text--------------"+scriptContent);
             scriptContent= Script.vInScript(mAccountBean,Hash.sha256(Hash.sha256(OcMath.hexStringToByteArray(scriptContent))));
             result = result.append(coin.getTxId()).append(txN).append(scriptContent);
         }

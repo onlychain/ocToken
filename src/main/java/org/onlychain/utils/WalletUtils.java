@@ -51,6 +51,13 @@ public class WalletUtils {
         return OcMath.toHexStringNoPrefix(Hash.sha256(Hash.sha256(OcMath.hexStringToByteArray(input))));
     }
 
+    public static byte[] getTxIdBin(String input){
+        return Hash.sha256(Hash.sha256(OcMath.hexStringToByteArray(input)));
+    }
+
+    public static byte[] getTxIdBin(byte[] input){
+        return Hash.sha256(Hash.sha256(input));
+    }
 
     public static String createAddress(byte[] publicKey) {
         byte[] sha256 = Hash.sha256(publicKey);

@@ -51,7 +51,7 @@ public class HeadBean {
         public EndBean(String height, String publicKey, String head) {
             this.coat =  OcMath.toHexStringNoPrefixZeroPadded(new BigInteger(String.valueOf(0)),16);
             this.isAcitonLabel =  OcMath.toHexStringNoPrefixZeroPadded(new BigInteger(String.valueOf(0)),2);;
-            this.time = Leb128Utils.encodeUleb128(System.currentTimeMillis());;
+            this.time = Leb128Utils.encodeUleb128(String.valueOf(System.currentTimeMillis()/1000));;
             this.height = Leb128Utils.encodeUleb128(height);
             this.ins = "00";
             this.insSize = OcMath.toHexStringNoPrefixZeroPadded(new BigInteger(String.valueOf(OcMath.hexStringToByteArray(this.ins).length)),2);
@@ -64,14 +64,15 @@ public class HeadBean {
             Calendar cal = Calendar.getInstance();
             cal.setTime(date);//设置起时间
             cal.add(Calendar.YEAR, 1);//增加一年
-            this.lockTime = Leb128Utils.encodeUleb128(cal.getTimeInMillis());
-
+            System.out.println("000========================="+cal.getTimeInMillis());
+            this.lockTime = Leb128Utils.encodeUleb128(String.valueOf(cal.getTimeInMillis()/1000));
         }
 
 
         public String getResult() {
             StringBuffer result=new StringBuffer();
-//          System.out.println(result.append(lockTime).append(coat).append(isAcitonLabel).append(time).append(height));
+
+
             return head+result.append(lockTime).append(coat).append(isAcitonLabel).append(time).append(height).append(publicKey).append(insSize).append(ins).toString();
         }
     }

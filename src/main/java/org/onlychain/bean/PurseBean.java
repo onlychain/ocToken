@@ -44,8 +44,8 @@ public class PurseBean {
         private int n;
         private long value;
         private String reqSigs;
-        private int createdBlock;
-        private int lockTime;
+        private long createdBlock;
+        private long lockTime;
         private String address;
         private int actionType;
 
@@ -81,19 +81,19 @@ public class PurseBean {
             this.reqSigs = reqSigs;
         }
 
-        public int getCreatedBlock() {
+        public long getCreatedBlock() {
             return createdBlock;
         }
 
-        public void setCreatedBlock(int createdBlock) {
+        public void setCreatedBlock(long createdBlock) {
             this.createdBlock = createdBlock;
         }
 
-        public int getLockTime() {
+        public long getLockTime() {
             return lockTime;
         }
 
-        public void setLockTime(int lockTime) {
+        public void setLockTime(long lockTime) {
             this.lockTime = lockTime;
         }
 

@@ -11,7 +11,7 @@ public class BaseActionBean {
     private String message;
     private String sigStr;
     private String txid;
-
+    private String commitData;
 
     /**
      * s使用公钥验证消息的真实性
@@ -19,16 +19,19 @@ public class BaseActionBean {
      * @return
      */
     public boolean checkSig(byte[] publicKeyBin){
-        byte[] messageBin=  Hash.sha256(Hash.sha256(OcMath.hexStringToByteArray(message)));
-//        System.out.println("==="+(message.substring(message.length()-144)));
-        Signature sig = Signature.parse(OcMath.hexStringToByteArray(sigStr));
-        PublicKey publicKey = PublicKey.parse(publicKeyBin);
-        if (Secp256k1.verify(publicKey, messageBin, sig))
+        if (Secp256k1.verify(PublicKey.parse(publicKeyBin), Hash.sha256(Hash.sha256(OcMath.hexStringToByteArray(message))), Signature.parse(OcMath.hexStringToByteArray(sigStr))))
             return true;
         else
             return false;
     }
 
+    public String getCommitData() {
+        return message+sigStr;
+    }
+
+    public void setCommitData(String commitData) {
+        this.commitData = commitData;
+    }
 
     public void setMessage(String message) {
         this.message = message;
@@ -41,7 +44,11 @@ public class BaseActionBean {
 
 
     public String getTxid() {
-        return WalletUtils.getTxId(message.substring(0,message.length()-140));
+        return WalletUtils.getTxId(getCommitData());
+    }
+
+    public byte[] getTxidBin() {
+        return WalletUtils.getTxIdBin(getCommitData());
     }
 
     public String getSigStr() {

@@ -22,7 +22,7 @@ public class Script {
         String sigResult;
         String sigContent;
         Signature sig = Secp256k1.sign(mAccountBean.getPrivateKeyBin(), message);
-        System.out.println("sig--------------"+OcMath.toHexStringNoPrefix(sig.serialize()));
+//        System.out.println("sig--------------"+OcMath.toHexStringNoPrefix(sig.serialize()));
         byte[] sigByte=sig.serialize();
         String sigStr= OcMath.toHexStringNoPrefix(sigByte);
         String publicKeyStr=OcMath.toHexStringNoPrefix(mAccountBean.getPublicKeyBin());

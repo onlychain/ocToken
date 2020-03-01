@@ -1,0 +1,70 @@
+package org.onlychain.wallet.tranfer;
+
+import org.onlychain.net.Request;
+import org.onlychain.wallet.base.ApiConfig;
+import org.onlychain.wallet.iface.ImpQueryAction;
+
+public class QueryUtils {
+    private ImpQueryAction impQueryAction;
+    private String txId;
+    private int number=0;
+    private Thread runTask;
+    private int howNumStop=0;
+
+
+    /**
+     * 轮询确认对应TXID是否成功上链
+     * @param howNumStop  尝试查询次数，次数满回调为失败
+     * @param txId
+     * @param impQueryAction
+     */
+    public QueryUtils(int howNumStop,final String txId,ImpQueryAction impQueryAction) {
+        this.txId=txId;
+        this.impQueryAction=impQueryAction;
+        this.howNumStop=howNumStop;
+        runTask=new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (runTask!=null){
+                    queryAction(txId);
+                    try {
+                        Thread.sleep(2000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+        runTask.start();
+    }
+
+    public QueryUtils() {
+
+    }
+
+
+    public void queryAction(String txId){
+        new Request(ApiConfig.API_queryAction,ApiConfig.queryAction(txId)) {
+            @Override
+            public void success(StringBuffer json) {
+                number+=1;
+                if(json!=null&&json.toString().length()>=60)
+                {
+                    runTask=null;
+                    impQueryAction.inChainSuceess(json);
+                }
+                else if(number>=howNumStop){
+                    runTask=null;
+                    impQueryAction.inChainFail();
+                }
+            }
+            @Override
+            public void fail(Exception e) {
+
+            }
+        };
+
+    }
+
+
+}

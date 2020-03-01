@@ -21,6 +21,8 @@ public class ApiConfig {
         return map;
    }
 
+    //获取系统时间、高度、轮次、轮次时间
+    public final static String API_getSystemInfo= IP+"/Node/getSystemInfo";
 
     //查询某一个区块
     public final static String API_queryBlock= IP+"/Block/queryBlock";
@@ -38,6 +40,7 @@ public class ApiConfig {
         map.put("txId",txId);
         return map;
     }
+
 
 
     public static String getIP() {
