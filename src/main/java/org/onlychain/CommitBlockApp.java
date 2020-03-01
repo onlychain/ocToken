@@ -16,9 +16,8 @@ public class CommitBlockApp
 
         //根据随机私钥生成账户
         AccountBean mAccountBeanRandom=WalletUtils.createAccount();
-
         //根据确定的私钥生成账户
-        final AccountBean mAccountBean=WalletUtils.createAccount(OcMath.hexStringToByteArray("2603e40800407582ca68f327bdc7222922c7e53d6b2f73c12e4cdc6407752500"));
+        final AccountBean mAccountBean=WalletUtils.createAccount(OcMath.hexStringToByteArray("38c11634fdfeee5704ed218b06ad1057e75fb3c35a9ccd86e0c602b5171b5a00"));
         //获取带oc前缀的地址
         System.out.println("带oc前缀的地址    "+mAccountBean.getAddress());
         //获取不带oc前缀的地址
