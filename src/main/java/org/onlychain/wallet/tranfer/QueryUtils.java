@@ -1,5 +1,7 @@
 package org.onlychain.wallet.tranfer;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import org.onlychain.net.Request;
 import org.onlychain.wallet.base.ApiConfig;
 import org.onlychain.wallet.iface.ImpQueryAction;
@@ -47,16 +49,26 @@ public class QueryUtils {
         new Request(ApiConfig.API_queryAction,ApiConfig.queryAction(txId)) {
             @Override
             public void success(StringBuffer json) {
-                number+=1;
-                if(json!=null&&json.toString().length()>=60)
-                {
-                    runTask=null;
-                    impQueryAction.inChainSuceess(json);
-                }
-                else if(number>=howNumStop){
+                try{
+                    JSONObject record = JSON.parseObject(json.toString());
+                    number+=1;
+                    if(record!=null && !record.get("record").toString().equals("[]") )
+                    {
+                        runTask=null;
+                        impQueryAction.inChainSuceess(json);
+                    }
+                    else if(number>=howNumStop){
+                        runTask=null;
+                        impQueryAction.inChainFail();
+                    }
+                }catch (Exception e){
+                    e.printStackTrace();
                     runTask=null;
                     impQueryAction.inChainFail();
+                    System.out.println("请检查节点或网络");
                 }
+
+
             }
             @Override
             public void fail(Exception e) {
