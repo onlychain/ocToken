@@ -13,9 +13,15 @@ public class CommitBlockApp
 {
     public static void main(String[] args )
     {
-
         //根据随机私钥生成账户
         AccountBean mAccountBeanRandom=WalletUtils.createAccount();
+        //获取带oc前缀的地址
+        System.out.println("随机版，带oc前缀的地址    "+mAccountBeanRandom.getAddress());
+        //获取不带oc前缀的地址
+        System.out.println("随机版，不带oc前缀的地址  "+mAccountBeanRandom.getAddressNoPrefix());
+        //获取公钥
+        System.out.println("随机版，公钥  "+mAccountBeanRandom.getPublicKey());
+
         //根据确定的私钥生成账户
         final AccountBean mAccountBean=WalletUtils.createAccount(OcMath.hexStringToByteArray("38c11634fdfeee5704ed218b06ad1057e75fb3c35a9ccd86e0c602b5171b5a00"));
         //获取带oc前缀的地址
@@ -40,7 +46,6 @@ public class CommitBlockApp
                 //获取钱包开通权益的零钱列表
                 getCoinList(TYPE_4_FOR_INTEREST);
 
-
                 //获取所有类型的余额
                 System.out.println("获取所有类型的余额    "+getBalance());
                 //获取可流通类型的余额
@@ -50,14 +55,12 @@ public class CommitBlockApp
                 //判断权益是否开通成功
                 System.out.println("是否拥有权益："+(getBalance(TYPE_4_FOR_INTEREST).compareTo(new BigDecimal("100"))>-1 ? "有":"没有"));
 
-
                 //获取一笔最适合开通权益的零钱（默认在100~120之间取）
                 System.out.println("获取一笔最适合开通权益的零钱   "+getCoinForInterest().getValue()/Long.valueOf(BASE_NUMBER));
                 //在指定范围内，获取一笔最大的零钱
                 System.out.println("在指定范围内获取一笔最大的零钱 "+getCoinForMax("0","10000").getValue()/Long.valueOf(BASE_NUMBER));
                 //在指定范围内，获取一笔最小的零钱
                 System.out.println("在指定范围内获取一笔最小的零钱 "+getCoinForMin("10","10000").getValue()/Long.valueOf(BASE_NUMBER));
-
 
                 //设定转账的目标地址
                 OutBean mOutBean= new OutBean();
@@ -111,13 +114,10 @@ public class CommitBlockApp
                 }
 
             }
-
-
             @Override
             public void getCoinFail(Exception e) {
                 System.out.println((e));
             }
-
         };
 
     }
