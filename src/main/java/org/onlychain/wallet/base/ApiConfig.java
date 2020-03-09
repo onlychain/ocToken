@@ -49,5 +49,10 @@ public class ApiConfig {
 
     public static void setIP(String IP) {
         ApiConfig.IP = IP;
+        API_selectPurse= IP+"/Trading/selectPurse";
+        API_receiveAction= IP+"/Action/receiveAction";
+        API_getSystemInfo= IP+"/Node/getSystemInfo";
+        API_queryBlock= IP+"/Block/queryBlock";
+        API_queryAction= IP+"/Action/queryAction";
     }
 }
