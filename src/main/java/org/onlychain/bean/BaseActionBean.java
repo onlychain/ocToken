@@ -25,6 +25,31 @@ public class BaseActionBean {
             return false;
     }
 
+    /**
+     * 验证自定义消息
+     * @param publicKeyBin
+     * @param message
+     * @param sigStr
+     * @return
+     */
+    public boolean checkSign(byte[] publicKeyBin,String message,String sigStr){
+        if (Secp256k1.verify(PublicKey.parse(publicKeyBin), Hash.sha256(Hash.sha256(message.getBytes())), Signature.parse(OcMath.hexStringToByteArray(sigStr))))
+            return true;
+        else
+            return false;
+    }
+
+    /**
+     * 使用私钥将对应公钥与自定义消息进行加签
+     * @param privateKeyBin
+     * @param message
+     * @return
+     */
+    public String makeSign(byte[] privateKeyBin,String message){
+        AccountBean mAccountBean=WalletUtils.createAccount(privateKeyBin);
+        return OcMath.toHexStringNoPrefix(Secp256k1.sign(privateKeyBin,Hash.sha256(Hash.sha256((message).getBytes()))).serialize());
+    }
+
     public String getCommitData() {
         return message+sigStr;
     }
