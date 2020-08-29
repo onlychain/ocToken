@@ -16,14 +16,25 @@ public class MakeAction {
     List<PurseBean.RecordBean> coinList;
     List<OutBean> outList;
     int actionType=1;
-
+    long lockHeight=0;
 
     public MakeAction(AccountBean mAccountBean,int actionType,List<PurseBean.RecordBean> coinList, List<OutBean> outList) {
         this.mAccountBean = mAccountBean;
         this.actionType=actionType;
         this.coinList = coinList;
         this.outList=outList;
+        this.lockHeight=-1;
     }
+
+    public MakeAction(AccountBean mAccountBean,int actionType,List<PurseBean.RecordBean> coinList, List<OutBean> outList,long lockHeight) {
+        this.mAccountBean = mAccountBean;
+        this.actionType=actionType;
+        this.coinList = coinList;
+        this.outList=outList;
+        this.lockHeight=lockHeight;
+    }
+
+
     /**
      * 普通交易
      * @return
@@ -33,6 +44,10 @@ public class MakeAction {
         HeadBean.EndBean mEndBean = new HeadBean.EndBean(height,mAccountBean.getPublicKey(),head.toString());
         if(actionType==4)
             mEndBean.setLockTimeAdd1Year();
+
+        if(actionType==1)
+            if (lockHeight>0)
+                mEndBean.setLockTimeForCoin(lockHeight);
 
         String result=mEndBean.getResult();
         String sigStr = OcMath.toHexStringNoPrefix(Secp256k1.sign(mAccountBean.getPrivateKeyBin(), WalletUtils.getTxIdBin(result)).serialize());

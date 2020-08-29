@@ -81,8 +81,10 @@ public abstract class Request {
                     }
                 } catch (MalformedURLException e) {
                     e.printStackTrace();
+                    fail(e);
                 } catch (IOException e) {
                     e.printStackTrace();
+                    fail(e);
                 } catch (Exception e) {
                     e.printStackTrace();
                     fail(e);

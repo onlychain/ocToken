@@ -22,6 +22,7 @@ public abstract class GetBlockData {
         new Request(ApiConfig.API_queryBlock,ApiConfig.queryBlock(height)) {
             @Override
             public void success(StringBuffer json) {
+                System.out.println(json);
                 BlockBean.RecordBean mRecord=JSON.parseObject(json.toString(), BlockBean.class).getRecord();
                 getSuccess(mRecord.getTradingInfo());
             }

@@ -68,6 +68,10 @@ public class HeadBean {
             this.lockTime = Leb128Utils.encodeUleb128(String.valueOf(cal.getTimeInMillis()/1000));
         }
 
+        public void setLockTimeForCoin(long lockHeight) {
+            this.lockTime = Leb128Utils.encodeUleb128(lockHeight);
+        }
+
 
         public String getResult() {
             StringBuffer result=new StringBuffer();

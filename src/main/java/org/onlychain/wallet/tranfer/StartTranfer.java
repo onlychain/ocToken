@@ -7,6 +7,7 @@ import org.onlychain.secp256k1.PublicKey;
 import org.onlychain.secp256k1.Secp256k1;
 import org.onlychain.utils.OcMath;
 import org.onlychain.wallet.base.ApiConfig;
+import org.onlychain.wallet.iface.ImpGetAction;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -50,12 +51,20 @@ public abstract class StartTranfer {
         return this;
     }
 
+    public StartTranfer inputAddressList(List<OutBean> outoutList){
+        //最多不要超过50
+        if (outoutList.size()>50)
+            return null;
+        this.outList=outoutList;
+        return this;
+    }
+
+
     public StartTranfer inputAddress(OutBean out){
         this.outList=new ArrayList<>();
         this.outList.add(out);
         return this;
     }
-
 
     public void openInterest(PurseBean.RecordBean coin){
         List<PurseBean.RecordBean> coinLis=new ArrayList<>();
@@ -69,13 +78,53 @@ public abstract class StartTranfer {
         commit(TYPE_1_FOR_TRANSFER);
     }
 
+    /**
+     * 获取质押裸交易数据
+     * @return
+     */
+    public void getPledgeSignData(final ImpGetAction mImpGetAction){
+        final long pledgeCoin=Long.valueOf(String.valueOf(sumCoinList(this.coinLis)));
+        this.outList=new ArrayList<>();
+        this.outList.add(new OutBean(pledgeCoin,mAccountBean.getAddressNoPrefix()));
+
+        new Request(ApiConfig.API_getSystemInfo) {
+            @Override
+            public void success(StringBuffer json) {
+                GetSystemInfoBean.RecordBean mGetSystemInfoBean=JSON.parseObject(json.toString(), GetSystemInfoBean.class).getRecord();
+                //根据coin数量计算锁定高度
+                long lockHeight=(30*(int)Math.floor(pledgeCoin/Long.valueOf(BASE_NUMBER)))+Long.valueOf(String.valueOf(mGetSystemInfoBean.getBlockHeight()));
+                MakeAction mMakeAction = new MakeAction(mAccountBean,TYPE_1_FOR_TRANSFER,coinLis,outList,lockHeight);
+                final BaseActionBean localCommitBean=mMakeAction.createAction(String.valueOf(mGetSystemInfoBean.getBlockHeight()));
+                mImpGetAction.receive(localCommitBean.getCommitData());
+            }
+            @Override
+            public void fail(Exception e) {
+                receiveFail(new Exception("获取最新高度失败,请检查节点是否正常"));
+            }
+        };
+    }
+
+
+    /**
+     * 合并零钱或拆额零钱
+     * @param excreteCoin
+     * @return
+     */
+    public StartTranfer inputExcreteCoins(long excreteCoin){
+        this.outList=new ArrayList<>();
+        this.outList.add(new OutBean(excreteCoin,mAccountBean.getAddressNoPrefix()));
+        return this;
+    }
+
 
     public void commit(final int actionType){
         //找零
         long findCoin=0;
         if(actionType==TYPE_1_FOR_TRANSFER){
             findCoin= Long.valueOf(sumCoinList(coinLis).subtract(sumOutList(outList)).toString());
-            this.outList.add(new OutBean(findCoin,mAccountBean.getAddressNoPrefix()));
+            //如果零钱全部转出则无需给自己找零
+            if (findCoin!=0)
+                this.outList.add(new OutBean(findCoin,mAccountBean.getAddressNoPrefix()));
         }else if(actionType==TYPE_4_FOR_INTEREST){
             this.outList=new ArrayList<>();
             this.outList.add(new OutBean(this.coinLis.get(0).getValue(),mAccountBean.getAddressNoPrefix()));
@@ -98,9 +147,15 @@ public abstract class StartTranfer {
         System.out.println(sumOutList(outList));
         System.out.println(findCoin);
 
+        doCommit(actionType);
+   }
 
+    /**
+     * 做最后整合提交
+     */
+    public void doCommit(final int actionType){
         //先从节点获取最新高度信息
-      new Request(ApiConfig.API_getSystemInfo) {
+        new Request(ApiConfig.API_getSystemInfo) {
             @Override
             public void success(StringBuffer json) {
                 GetSystemInfoBean.RecordBean mGetSystemInfoBean=JSON.parseObject(json.toString(), GetSystemInfoBean.class).getRecord();
@@ -122,18 +177,13 @@ public abstract class StartTranfer {
                         receiveFail(e);
                     }
                 };
-
-
             }
             @Override
             public void fail(Exception e) {
                 receiveFail(new Exception("获取最新高度失败,请检查节点是否正常"));
             }
         };
-
-   }
-
-
+    }
 
 
 
