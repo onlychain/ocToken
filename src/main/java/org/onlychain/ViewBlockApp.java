@@ -1,5 +1,6 @@
 package org.onlychain;
 
+import org.onlychain.wallet.base.ApiConfig;
 import org.onlychain.wallet.viewblock.GetBlockData;
 import org.onlychain.wallet.viewblock.HexConvertJson;
 
@@ -10,6 +11,8 @@ import java.util.List;
  */
 public class ViewBlockApp {
     public static void main(String[] args) {
+        //更换节点IP
+        ApiConfig.init("http://39.98.135.66:9082");
 
   new GetBlockData("1349624") {
            @Override

@@ -1,6 +1,8 @@
 package org.onlychain;
+import com.alibaba.fastjson.JSON;
 import com.sun.xml.internal.bind.v2.TODO;
 import org.onlychain.bean.*;
+import org.onlychain.net.Request;
 import org.onlychain.utils.OcMath;
 import org.onlychain.utils.WalletUtils;
 import org.onlychain.wallet.base.ApiConfig;
@@ -27,7 +29,7 @@ public class CommitBlockApp
         System.out.println("随机版，公钥  "+mAccountBeanRandom.getPublicKey());
 
         //根据确定的私钥生成账户
-        final AccountBean mAccountBean=WalletUtils.createAccount(OcMath.hexStringToByteArray("ea23e889d590a443831a785a398ce74179f09dece2fe5bfda41f795c50240c61"));
+        final AccountBean mAccountBean=WalletUtils.createAccount(OcMath.hexStringToByteArray("ea23e889d590a443831a785a398ce74179f09dece2fe5bfda41f795c50240c63"));
         //获取带oc前缀的地址
         System.out.println("带oc前缀的地址    "+mAccountBean.getAddress());
         //获取不带oc前缀的地址
@@ -53,7 +55,7 @@ public class CommitBlockApp
                 //获取所有类型的余额
                 System.out.println("获取所有类型的余额    "+getBalance());
                 //获取可流通类型的余额
-                System.out.println("获取可流通类型的余额  "+getBalance(TYPE_1_FOR_TRANSFER));
+                System.out.println("获取零钱类型为1的所有余额  "+getBalance(TYPE_1_FOR_TRANSFER));
                 //获取被开通权益的余额
                 System.out.println("获取被开通权益的余额  "+getBalance(TYPE_4_FOR_INTEREST));
                 //判断权益是否开通成功
@@ -106,45 +108,62 @@ public class CommitBlockApp
                 {
                     //设定转账的目标地址
                     OutBean mOutBean= new OutBean();
-                    mOutBean.setAddress("459d0c3fde261eeaecd2c47b484f20db3ef7558b");
-                    mOutBean.setValue(1*Long.valueOf(BASE_NUMBER));
+                    mOutBean.setAddress("274579901ace0417d662a203c8c3dbbb40693d8d");
+                    mOutBean.setValue(10000*Long.valueOf(BASE_NUMBER));
 
-                    OutBean mOutBean2= new OutBean();
+                  /*  OutBean mOutBean2= new OutBean();
                     mOutBean2.setAddress("419d0c3fde261eeaecd2c47b484f20db3ef7558b");
                     mOutBean2.setValue(1*Long.valueOf(BASE_NUMBER));
 
                     OutBean mOutBean3= new OutBean();
                     mOutBean3.setAddress("479d0c3fde261eeaecd2c47b484f20db3ef7558b");
-                    mOutBean3.setValue(1*Long.valueOf(BASE_NUMBER));
+                    mOutBean3.setValue(1*Long.valueOf(BASE_NUMBER));*/
 
-                    //如果已开通权益，即可使用单笔转账功能
-                    //mStartTranfer.inputCoin(getCoinList(TYPE_1_FOR_TRANSFER)).inputAddress(mOutBean).commit();
-
-                    //如果已开通权益，即可使用多笔转账功
                     List<OutBean> outoutList = new ArrayList<>();
                     outoutList.add(mOutBean);
-                    outoutList.add(mOutBean2);
-                    outoutList.add(mOutBean3);
+            /*      outoutList.add(mOutBean2);
+                    outoutList.add(mOutBean3);*/
 
                     //TODO --------------------------------以下业务不能同时运行
 
-                    //TODO 提交普通交易
-                    //mStartTranfer.inputCoin(getCoinList(TYPE_1_FOR_TRANSFER)).inputAddressList(outoutList).commit();
+                    new Request(ApiConfig.API_getSystemInfo) {
+                        @Override
+                        public void success(StringBuffer json) {
+                            GetSystemInfoBean.RecordBean mGetSystemInfoBean= JSON.parseObject(json.toString(), GetSystemInfoBean.class).getRecord();
+                            System.out.println("最新高度=="+mGetSystemInfoBean.getBlockHeight());
+                           /* for (PurseBean.RecordBean pr:getCoinListForHeight(mGetSystemInfoBean.getBlockHeight()))
+                                System.out.println(pr.getValue());*/
 
-                    //TODO 获取质押的裸交易数据
-                    /*mStartTranfer.inputCoin(getCoinList(TYPE_1_FOR_TRANSFER)).getPledgeSignData(new ImpGetAction() {
+                            //获取可用零钱（不含权益零钱、锁定零钱）
+                            List<PurseBean.RecordBean> coinPurse=getCoinListForHeight(mGetSystemInfoBean.getBlockHeight());
+                            //获取可流通类型的余额
+                            System.out.println("获取可流通类型的余额  "+getBalance(coinPurse));
+
+
+                            //TODO 提交普通单笔转账交易
+                        //mStartTranfer.inputCoin(coinPurse).inputAddress(mOutBean).commit();
+                            //TODO 提交普通批量转账交易
+                        //mStartTranfer.inputCoin(coinPurse).inputAddressList(outoutList).commit();
+
+                            //TODO 获取质押的裸交易数据
+                        /*mStartTranfer.inputCoin(coinPurse).getPledgeSignData(new ImpGetAction() {
                         @Override
                         public void receive(String actionStr) {
                             System.out.println("得到质押裸交易签名==="+actionStr);
-                        }
-                    });
-                    */
+                            }
+                        });*/
 
-                    //TODO 对零钱进行合并或拆额，如果自己的out为1个则为合并，如果自己的out为2个则为拆额 ,取整用 X*Long.valueOf(BASE_NUMBER)
-                    //TODO 选某笔零钱进行拆额
-                    //mStartTranfer.inputCoin(getCoinList(TYPE_1_FOR_TRANSFER).get(0)).inputExcreteCoins(3900l).commit();
-                    //TODO 选多笔零钱进行合并
-                    mStartTranfer.inputCoin(getCoinList(TYPE_1_FOR_TRANSFER)).inputExcreteCoins(133889333234000l).commit();
+                            //TODO 对零钱进行合并或拆额，如果自己的out为1个则为合并，如果自己的out为2个则为拆额 ,取整用 X*Long.valueOf(BASE_NUMBER)
+                            //TODO 选某笔零钱进行拆额
+                            //mStartTranfer.inputCoin(getCoinList(coinPurse).get(0)).inputExcreteCoins(3900l).commit();
+                            //TODO 选多笔零钱进行合并
+                            //mStartTranfer.inputCoin(getCoinList(coinPurse)).inputExcreteCoins(133889333234000l).commit();
+                        }
+                        @Override
+                        public void fail(Exception e) {
+
+                        }
+                    };
                 } else{
                     //TODO 开通权益
                     mStartTranfer.openInterest(getCoinForMin("20","30"));

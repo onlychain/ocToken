@@ -67,6 +67,18 @@ public abstract void getCoinFail(Exception e);
     }
 
     /**
+     * 根据是否小于指定高度获取指定零钱,比如获取已解锁零钱
+     * @param height
+     * @return
+     */
+    public List<PurseBean.RecordBean> getCoinListForHeight(long height){
+        List<PurseBean.RecordBean> coinList=new ArrayList<>();
+        for (PurseBean.RecordBean coin: getCoinList(TYPE_1_FOR_TRANSFER))
+            if (coin.getLockTime() < height)
+                coinList.add(coin);
+        return coinList;
+    }
+    /**
      * 获取指定金额范围内的可用零钱列表
      * @param startValue
      * @param endValue
@@ -156,5 +168,11 @@ public abstract void getCoinFail(Exception e);
         return sum.divide(new BigDecimal(BASE_NUMBER));
     }
 
+    public BigDecimal getBalance(List<PurseBean.RecordBean>  coins){
+        BigDecimal sum=new BigDecimal("0");
+        for (PurseBean.RecordBean coin : coins)
+            sum=sum.add(new BigDecimal(coin.getValue()));
+        return sum.divide(new BigDecimal(BASE_NUMBER));
+    }
 
 }
