@@ -66,11 +66,12 @@ public abstract class StartTranfer {
         return this;
     }
 
-    public void openInterest(PurseBean.RecordBean coin){
+    public StartTranfer openInterest(PurseBean.RecordBean coin){
         List<PurseBean.RecordBean> coinLis=new ArrayList<>();
         coinLis.add(coin);
         this.coinLis=coinLis;
-        commit(TYPE_4_FOR_INTEREST);
+//        commit(TYPE_4_FOR_INTEREST);
+        return this;
     }
 
 
@@ -116,6 +117,53 @@ public abstract class StartTranfer {
         return this;
     }
 
+    /**
+     * 获取签名数据
+     * @param actionType
+     * @param mImpGetAction
+     */
+    public void getAction(final int actionType,final ImpGetAction mImpGetAction){
+        //找零
+        long findCoin=0;
+        if(actionType==TYPE_1_FOR_TRANSFER){
+            findCoin= Long.valueOf(sumCoinList(coinLis).subtract(sumOutList(outList)).toString());
+            //如果零钱全部转出则无需给自己找零
+            if (findCoin!=0)
+                this.outList.add(new OutBean(findCoin,mAccountBean.getAddressNoPrefix()));
+        }else if(actionType==TYPE_4_FOR_INTEREST){
+            this.outList=new ArrayList<>();
+            this.outList.add(new OutBean(this.coinLis.get(0).getValue(),mAccountBean.getAddressNoPrefix()));
+        }
+
+
+       if(coinLis!=null&&coinLis.size()>0&&Long.valueOf(sumCoinList(coinLis).toString())>0)
+        {
+            if (findCoin<0)
+            {
+                System.out.println("有余额但不够抵扣");
+                return;
+            }
+        }else {
+            System.out.println("完全没有余额");
+            return;
+        }
+        new Request(ApiConfig.API_getSystemInfo) {
+            @Override
+            public void success(StringBuffer json) {
+
+                GetSystemInfoBean.RecordBean mGetSystemInfoBean=JSON.parseObject(json.toString(), GetSystemInfoBean.class).getRecord();
+
+                MakeAction mMakeAction = new MakeAction(mAccountBean,actionType,coinLis,outList);
+                final BaseActionBean localCommitBean=mMakeAction.createAction(String.valueOf(mGetSystemInfoBean.getBlockHeight()));
+                mImpGetAction.receive(localCommitBean.getCommitData());
+            }
+            @Override
+            public void fail(Exception e) {
+                receiveFail(new Exception("获取最新高度失败,请检查节点是否正常"));
+            }
+        };
+    }
+
 
     public void commit(final int actionType){
         //找零
@@ -149,6 +197,9 @@ public abstract class StartTranfer {
 
         doCommit(actionType);
    }
+
+
+
 
     /**
      * 做最后整合提交

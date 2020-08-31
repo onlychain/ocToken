@@ -175,4 +175,11 @@ public abstract void getCoinFail(Exception e);
         return sum.divide(new BigDecimal(BASE_NUMBER));
     }
 
+
+    public BigDecimal getBalanceLong(List<PurseBean.RecordBean>  coins){
+        BigDecimal sum=new BigDecimal("0");
+        for (PurseBean.RecordBean coin : coins)
+            sum=sum.add(new BigDecimal(coin.getValue()));
+        return sum;
+    }
 }

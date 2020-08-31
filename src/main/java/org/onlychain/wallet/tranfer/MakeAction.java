@@ -43,7 +43,7 @@ public class MakeAction {
         HeadBean head=new HeadBean(actionType,setVInBody()+setVOutBody());
         HeadBean.EndBean mEndBean = new HeadBean.EndBean(height,mAccountBean.getPublicKey(),head.toString());
         if(actionType==4)
-            mEndBean.setLockTimeAdd1Year();
+            mEndBean.setLockTimeAdd1Year(height);
 
         if(actionType==1)
             if (lockHeight>0)

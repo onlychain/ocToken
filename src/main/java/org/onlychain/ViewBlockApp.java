@@ -19,7 +19,7 @@ public class ViewBlockApp {
            public void getSuccess(List<String> tradList) {
                for (String temp:tradList)
                {
-                 String result =  new HexConvertJson(temp).getJson();
+                 String result =  new HexConvertJson("010401011aaea3ca7f1c55967907869884386ac47f291a2cb618f5052385a787bb4e7ddb00006b483046022100dc73afb3e9c1e0612b2f63d836bc96c5b165328f5c4ad5d1f547b9aa5e740c0a022100f6a8a7be3387fb6da3e2b422d875ffd9a7916d9996abd512196bee5231837a62210355c48844bb6392dbd251167c92904eabbbc1982b39dc7ebcb2141063f0281e1f010000000077359400001976a9143b349701a36b457339e53ead5159750efc1f2a8988acb6bcb88906000000000000000000b6d5b3fa05e9ac5d0355c48844bb6392dbd251167c92904eabbbc1982b39dc7ebcb2141063f0281e1f0100304502207f1070c3270c0996dc6cb55c68859bfe42b25168181524008a86880c37136f030221008972bd00bfaa227cb2ccf8d3af390b843e7d6092ea4001a4ad32da1f20057c6c").getJson();
                  if (result!=null)
                    System.out.println("-------"+result);
                }

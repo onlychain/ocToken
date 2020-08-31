@@ -17,6 +17,7 @@ import java.util.List;
 
 public class CommitBlockApp
 {
+    static List<PurseBean.RecordBean> coinPurse;
     public static void main(String[] args )
     {
         //根据随机私钥生成账户
@@ -29,7 +30,7 @@ public class CommitBlockApp
         System.out.println("随机版，公钥  "+mAccountBeanRandom.getPublicKey());
 
         //根据确定的私钥生成账户
-        final AccountBean mAccountBean=WalletUtils.createAccount(OcMath.hexStringToByteArray("ea23e889d590a443831a785a398ce74179f09dece2fe5bfda41f795c50240c63"));
+        final AccountBean mAccountBean=WalletUtils.createAccount(OcMath.hexStringToByteArray("4a23e889d590a443831a785a398ce74179f09dece2fe5bfda41f795c50240c62"));
         //获取带oc前缀的地址
         System.out.println("带oc前缀的地址    "+mAccountBean.getAddress());
         //获取不带oc前缀的地址
@@ -69,7 +70,7 @@ public class CommitBlockApp
                 System.out.println("在指定范围内获取一笔最小的零钱 "+getCoinForMin("10","10000").getValue()/Long.valueOf(BASE_NUMBER));
 
 
-                StartTranfer mStartTranfer=new StartTranfer(mAccountBean) {
+                final StartTranfer mStartTranfer=new StartTranfer(mAccountBean) {
                     @Override
                     public void receiveAction(final BaseActionBean localCommitBean, StringBuffer json) {
                         //获取Action的签名
@@ -106,47 +107,62 @@ public class CommitBlockApp
                 //获取当前钱包的零钱是否存在至少一笔type为4的标准权益质押量
                 if(getBalance(TYPE_4_FOR_INTEREST).compareTo(new BigDecimal("20"))>-1)
                 {
-                    //设定转账的目标地址
-                    OutBean mOutBean= new OutBean();
-                    mOutBean.setAddress("274579901ace0417d662a203c8c3dbbb40693d8d");
-                    mOutBean.setValue(10000*Long.valueOf(BASE_NUMBER));
-
-                  /*  OutBean mOutBean2= new OutBean();
-                    mOutBean2.setAddress("419d0c3fde261eeaecd2c47b484f20db3ef7558b");
-                    mOutBean2.setValue(1*Long.valueOf(BASE_NUMBER));
-
-                    OutBean mOutBean3= new OutBean();
-                    mOutBean3.setAddress("479d0c3fde261eeaecd2c47b484f20db3ef7558b");
-                    mOutBean3.setValue(1*Long.valueOf(BASE_NUMBER));*/
-
-                    List<OutBean> outoutList = new ArrayList<>();
-                    outoutList.add(mOutBean);
-            /*      outoutList.add(mOutBean2);
-                    outoutList.add(mOutBean3);*/
-
                     //TODO --------------------------------以下业务不能同时运行
 
                     new Request(ApiConfig.API_getSystemInfo) {
                         @Override
                         public void success(StringBuffer json) {
+                            //设定转账的目标地址
+                            OutBean mOutBean= new OutBean();
+                            mOutBean.setAddress("274579901ace0417d662a203c8c3dbbb40693d8d");
+                            mOutBean.setValue(10000*Long.valueOf(BASE_NUMBER));
+
+                            OutBean mOutBean2= new OutBean();
+                            mOutBean2.setAddress("419d0c3fde261eeaecd2c47b484f20db3ef7558b");
+                            mOutBean2.setValue(1*Long.valueOf(BASE_NUMBER));
+
+                            OutBean mOutBean3= new OutBean();
+                            mOutBean3.setAddress("479d0c3fde261eeaecd2c47b484f20db3ef7558b");
+                            mOutBean3.setValue(1*Long.valueOf(BASE_NUMBER));
+
+                            List<OutBean> outoutList = new ArrayList<>();
+                            outoutList.add(mOutBean);
+                            outoutList.add(mOutBean2);
+                            outoutList.add(mOutBean3);
+
+
                             GetSystemInfoBean.RecordBean mGetSystemInfoBean= JSON.parseObject(json.toString(), GetSystemInfoBean.class).getRecord();
                             System.out.println("最新高度=="+mGetSystemInfoBean.getBlockHeight());
                            /* for (PurseBean.RecordBean pr:getCoinListForHeight(mGetSystemInfoBean.getBlockHeight()))
                                 System.out.println(pr.getValue());*/
 
                             //获取可用零钱（不含权益零钱、锁定零钱）
-                            List<PurseBean.RecordBean> coinPurse=getCoinListForHeight(mGetSystemInfoBean.getBlockHeight());
+                            coinPurse=getCoinListForHeight(mGetSystemInfoBean.getBlockHeight());
                             //获取可流通类型的余额
                             System.out.println("获取可流通类型的余额  "+getBalance(coinPurse));
 
 
                             //TODO 提交普通单笔转账交易
-                        //mStartTranfer.inputCoin(coinPurse).inputAddress(mOutBean).commit();
+//                        mStartTranfer.inputCoin(coinPurse).inputAddress(mOutBean).commit();
+                            //TODO 获取单笔转账签名
+                        mStartTranfer.inputCoin(coinPurse).inputAddress(mOutBean).getAction(TYPE_1_FOR_TRANSFER, new ImpGetAction() {
+                            @Override
+                            public void receive(String actionStr) {
+                                System.out.println(actionStr);
+                            }
+                        });
+
                             //TODO 提交普通批量转账交易
                         //mStartTranfer.inputCoin(coinPurse).inputAddressList(outoutList).commit();
-
+                            //TODO 获取普通批量转账交易签名
+                    /* mStartTranfer.inputCoin(coinPurse).inputAddressList(outoutList).getAction(TYPE_1_FOR_TRANSFER, new ImpGetAction() {
+                                @Override
+                                public void receive(String actionStr) {
+                                    System.out.println(actionStr);
+                                }
+                            });*/
                             //TODO 获取质押的裸交易数据
-                        /*mStartTranfer.inputCoin(coinPurse).getPledgeSignData(new ImpGetAction() {
+                 /*       mStartTranfer.inputCoin(coinPurse).getPledgeSignData(new ImpGetAction() {
                         @Override
                         public void receive(String actionStr) {
                             System.out.println("得到质押裸交易签名==="+actionStr);
@@ -155,18 +171,43 @@ public class CommitBlockApp
 
                             //TODO 对零钱进行合并或拆额，如果自己的out为1个则为合并，如果自己的out为2个则为拆额 ,取整用 X*Long.valueOf(BASE_NUMBER)
                             //TODO 选某笔零钱进行拆额
-                            //mStartTranfer.inputCoin(getCoinList(coinPurse).get(0)).inputExcreteCoins(3900l).commit();
+//                            mStartTranfer.inputCoin(coinPurse).inputExcreteCoins(20*Long.valueOf(BASE_NUMBER)).commit();
+                            //TODO 获取选某笔零钱进行拆额签名
+                       /*     mStartTranfer.inputCoin(coinPurse.get(0)).inputExcreteCoins(3900l).getAction(TYPE_1_FOR_TRANSFER, new ImpGetAction() {
+                                @Override
+                                public void receive(String actionStr) {
+                                    System.out.println(actionStr);
+                                }
+                            });*/
+
                             //TODO 选多笔零钱进行合并
-                            //mStartTranfer.inputCoin(getCoinList(coinPurse)).inputExcreteCoins(133889333234000l).commit();
+//                            mStartTranfer.inputCoin(coinPurse).inputExcreteCoins(getBalanceLong(coinPurse).longValue()).commit();
+                            //TODO 获取多笔零钱进行合并的签名,输入coinPurse零钱如果只有一笔，则没有合并的意义
+                        /*    mStartTranfer.inputCoin(coinPurse).inputExcreteCoins(getBalanceLong(coinPurse).longValue()).getAction(TYPE_1_FOR_TRANSFER, new ImpGetAction() {
+                                @Override
+                                public void receive(String actionStr) {
+                                    System.out.println(actionStr);
+                                }
+                            });*/
                         }
                         @Override
                         public void fail(Exception e) {
 
                         }
                     };
+
+
+
                 } else{
                     //TODO 开通权益
-                    mStartTranfer.openInterest(getCoinForMin("20","30"));
+                    mStartTranfer.openInterest(getCoinForMin("20","30")).commit(TYPE_4_FOR_INTEREST);
+                    //TODO 获取开通权益签名
+                   /* mStartTranfer.openInterest(getCoinForMin("20","30")).getAction(TYPE_4_FOR_INTEREST, new ImpGetAction() {
+                        @Override
+                        public void receive(String actionStr) {
+                            System.out.println(actionStr);
+                        }
+                    });*/
                 }
             }
 

@@ -59,13 +59,9 @@ public class HeadBean {
             this.head = head;
         }
 
-        public void setLockTimeAdd1Year() {
-            Date date = new Date();
-            Calendar cal = Calendar.getInstance();
-            cal.setTime(date);//设置起时间
-            cal.add(Calendar.YEAR, 1);//增加一年
-            System.out.println("000========================="+cal.getTimeInMillis());
-            this.lockTime = Leb128Utils.encodeUleb128(String.valueOf(cal.getTimeInMillis()/1000));
+        public void setLockTimeAdd1Year(String height) {
+            long lockHeight=Long.valueOf(height)+15768001l;
+            this.lockTime = Leb128Utils.encodeUleb128(lockHeight);
         }
 
         public void setLockTimeForCoin(long lockHeight) {
