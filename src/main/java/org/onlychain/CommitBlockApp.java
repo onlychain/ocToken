@@ -1,6 +1,5 @@
 package org.onlychain;
 import com.alibaba.fastjson.JSON;
-import com.sun.xml.internal.bind.v2.TODO;
 import org.onlychain.bean.*;
 import org.onlychain.net.Request;
 import org.onlychain.utils.OcMath;
@@ -30,7 +29,7 @@ public class CommitBlockApp
         System.out.println("随机版，公钥  "+mAccountBeanRandom.getPublicKey());
 
         //根据确定的私钥生成账户
-        final AccountBean mAccountBean=WalletUtils.createAccount(OcMath.hexStringToByteArray("4a23e889d590a443831a785a398ce74179f09dece2fe5bfda41f795c50240c62"));
+        final AccountBean mAccountBean=WalletUtils.createAccount(OcMath.hexStringToByteArray("ea23e889d590a443831a785a398ce74179f09dece2fe5bfda41f795c50240c62"));
         //获取带oc前缀的地址
         System.out.println("带oc前缀的地址    "+mAccountBean.getAddress());
         //获取不带oc前缀的地址
@@ -195,8 +194,6 @@ public class CommitBlockApp
 
                         }
                     };
-
-
 
                 } else{
                     //TODO 开通权益
