@@ -32,12 +32,20 @@ public class BaseActionBean {
      * @param sigStr
      * @return
      */
-    public boolean checkSign(byte[] publicKeyBin,String message,String sigStr){
+    public boolean checkApiSign(byte[] publicKeyBin,String message,String sigStr){
         if (Secp256k1.verify(PublicKey.parse(publicKeyBin), Hash.sha256(Hash.sha256(message.getBytes())), Signature.parse(OcMath.hexStringToByteArray(sigStr))))
             return true;
         else
             return false;
     }
+
+    public boolean checkSign(byte[] publicKeyBin,String message,String sigStr){
+        if (Secp256k1.verify(PublicKey.parse(publicKeyBin), Hash.sha256(Hash.sha256(OcMath.hexStringToByteArray(message))), Signature.parse(OcMath.hexStringToByteArray(sigStr))))
+            return true;
+        else
+            return false;
+    }
+
 
     /**
      * 使用私钥将对应公钥与自定义消息进行加签
@@ -46,7 +54,6 @@ public class BaseActionBean {
      * @return
      */
     public String makeSign(byte[] privateKeyBin,String message){
-        AccountBean mAccountBean=WalletUtils.createAccount(privateKeyBin);
         return OcMath.toHexStringNoPrefix(Secp256k1.sign(privateKeyBin,Hash.sha256(Hash.sha256((message).getBytes()))).serialize());
     }
 
@@ -76,11 +83,11 @@ public class BaseActionBean {
         return WalletUtils.getTxIdBin(getCommitData());
     }
 
-    public String getSigStr() {
+    public String getSignStr() {
         return sigStr;
     }
 
-    public void setSigStr(String sigStr) {
+    public void setSignStr(String sigStr) {
         this.sigStr = sigStr;
     }
 

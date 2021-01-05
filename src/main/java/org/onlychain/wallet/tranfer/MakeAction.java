@@ -53,13 +53,13 @@ public class MakeAction {
         String sigStr = OcMath.toHexStringNoPrefix(Secp256k1.sign(mAccountBean.getPrivateKeyBin(), WalletUtils.getTxIdBin(result)).serialize());
         BaseActionBean mBaseActionBean=new BaseActionBean();
         mBaseActionBean.setMessage(result);
-        mBaseActionBean.setSigStr(sigStr);
+        mBaseActionBean.setSignStr(sigStr);
 //        mBaseActionBean.setTxid(WalletUtils.getTxId(result));
         return mBaseActionBean;
     }
 
 
-      private String setVInBody(){
+    private String setVInBody(){
         StringBuffer result=new StringBuffer();
         //LEB128 输入笔数
         String number= Leb128Utils.encodeUleb128(coinList.size());
@@ -69,7 +69,7 @@ public class MakeAction {
             String txN=OcMath.toHexStringNoPrefixZeroPadded(new BigInteger(String.valueOf(coin.getN())),2);
             String scriptContent = coin.getTxId()+txN+Script.getLockScript(mAccountBean.getAddressNoPrefix());
 //            System.out.println("text--------------"+scriptContent);
-            scriptContent= Script.vInScript(mAccountBean,Hash.sha256(Hash.sha256(OcMath.hexStringToByteArray(scriptContent))));
+            scriptContent= Script.vInScript(mAccountBean, Hash.sha256(Hash.sha256(OcMath.hexStringToByteArray(scriptContent))));
             result = result.append(coin.getTxId()).append(txN).append(scriptContent);
         }
         return number+result.toString();

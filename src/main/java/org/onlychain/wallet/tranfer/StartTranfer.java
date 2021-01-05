@@ -20,26 +20,31 @@ import static org.onlychain.wallet.tranfer.GetVinCoin.*;
  * 各类交易类型封装在此
  */
 public abstract class StartTranfer {
-    public abstract void receiveAction(BaseActionBean localCommitBean,StringBuffer json);
+    public abstract void receiveAction(BaseActionBean localCommitBean, StringBuffer json);
     public abstract void receiveFail(Exception e);
-   private String ActionMsg;
-   private String Json;
+    private String ActionMsg;
+    private String Json;
     private AccountBean mAccountBean;
     private List<OutBean> outList;
     private List<PurseBean.RecordBean> coinLis;
+    private long blockHeight;
 
     public StartTranfer(AccountBean mAccountBean) {
         this.mAccountBean=mAccountBean;
     }
 
 
-   public StartTranfer inputCoin(List<PurseBean.RecordBean> coinLis){
+    public StartTranfer inputCoin(List<PurseBean.RecordBean> coinLis){
         this.coinLis=coinLis;
-       return this;
-   }
+        return this;
+    }
+    public StartTranfer initBlockHeight(long blockHeight){
+        this.blockHeight=blockHeight;
+        return this;
+    }
 
     public StartTranfer inputCoin(PurseBean.RecordBean coin){
-       List<PurseBean.RecordBean> coinLis=new ArrayList<>();
+        List<PurseBean.RecordBean> coinLis=new ArrayList<>();
         coinLis.add(coin);
         this.coinLis=coinLis;
         return this;
@@ -87,22 +92,30 @@ public abstract class StartTranfer {
         final long pledgeCoin=Long.valueOf(String.valueOf(sumCoinList(this.coinLis)));
         this.outList=new ArrayList<>();
         this.outList.add(new OutBean(pledgeCoin,mAccountBean.getAddressNoPrefix()));
+        if(blockHeight == 0) {
+            new Request(ApiConfig.API_getSystemInfo) {
+                @Override
+                public void success(StringBuffer json) {
+                    GetSystemInfoBean.RecordBean mGetSystemInfoBean = JSON.parseObject(json.toString(), GetSystemInfoBean.class).getRecord();
+                    //根据coin数量计算锁定高度
+                    long lockHeight = (30 * (int) Math.floor(pledgeCoin / Long.valueOf(BASE_NUMBER))) + Long.valueOf(String.valueOf(mGetSystemInfoBean.getBlockHeight()));
+                    MakeAction mMakeAction = new MakeAction(mAccountBean, TYPE_1_FOR_TRANSFER, coinLis, outList, lockHeight);
+                    final BaseActionBean localCommitBean = mMakeAction.createAction(String.valueOf(mGetSystemInfoBean.getBlockHeight()));
+                    mImpGetAction.receive(localCommitBean.getCommitData());
+                }
 
-        new Request(ApiConfig.API_getSystemInfo) {
-            @Override
-            public void success(StringBuffer json) {
-                GetSystemInfoBean.RecordBean mGetSystemInfoBean=JSON.parseObject(json.toString(), GetSystemInfoBean.class).getRecord();
-                //根据coin数量计算锁定高度
-                long lockHeight=(30*(int)Math.floor(pledgeCoin/Long.valueOf(BASE_NUMBER)))+Long.valueOf(String.valueOf(mGetSystemInfoBean.getBlockHeight()));
-                MakeAction mMakeAction = new MakeAction(mAccountBean,TYPE_1_FOR_TRANSFER,coinLis,outList,lockHeight);
-                final BaseActionBean localCommitBean=mMakeAction.createAction(String.valueOf(mGetSystemInfoBean.getBlockHeight()));
-                mImpGetAction.receive(localCommitBean.getCommitData());
-            }
-            @Override
-            public void fail(Exception e) {
-                receiveFail(new Exception("获取最新高度失败,请检查节点是否正常"));
-            }
-        };
+                @Override
+                public void fail(Exception e) {
+                    receiveFail(new Exception("获取最新高度失败,请检查节点是否正常"));
+                }
+            };
+        }else{
+            //根据coin数量计算锁定高度
+            long lockHeight = (30 * (int) Math.floor(pledgeCoin / Long.valueOf(BASE_NUMBER))) + Long.valueOf(String.valueOf(blockHeight));
+            MakeAction mMakeAction = new MakeAction(mAccountBean, TYPE_1_FOR_TRANSFER, coinLis, outList, lockHeight);
+            final BaseActionBean localCommitBean = mMakeAction.createAction(String.valueOf(blockHeight));
+            mImpGetAction.receive(localCommitBean.getCommitData());
+        }
     }
 
 
@@ -136,7 +149,7 @@ public abstract class StartTranfer {
         }
 
 
-       if(coinLis!=null&&coinLis.size()>0&&Long.valueOf(sumCoinList(coinLis).toString())>0)
+        if(coinLis!=null&&coinLis.size()>0&&Long.valueOf(sumCoinList(coinLis).toString())>0)
         {
             if (findCoin<0)
             {
@@ -147,21 +160,27 @@ public abstract class StartTranfer {
             System.out.println("完全没有余额");
             return;
         }
-        new Request(ApiConfig.API_getSystemInfo) {
-            @Override
-            public void success(StringBuffer json) {
+        if(blockHeight == 0) {
+            new Request(ApiConfig.API_getSystemInfo) {
+                @Override
+                public void success(StringBuffer json) {
 
-                GetSystemInfoBean.RecordBean mGetSystemInfoBean=JSON.parseObject(json.toString(), GetSystemInfoBean.class).getRecord();
+                    GetSystemInfoBean.RecordBean mGetSystemInfoBean=JSON.parseObject(json.toString(), GetSystemInfoBean.class).getRecord();
 
-                MakeAction mMakeAction = new MakeAction(mAccountBean,actionType,coinLis,outList);
-                final BaseActionBean localCommitBean=mMakeAction.createAction(String.valueOf(mGetSystemInfoBean.getBlockHeight()));
-                mImpGetAction.receive(localCommitBean.getCommitData());
-            }
-            @Override
-            public void fail(Exception e) {
-                receiveFail(new Exception("获取最新高度失败,请检查节点是否正常"));
-            }
-        };
+                    MakeAction mMakeAction = new MakeAction(mAccountBean,actionType,coinLis,outList);
+                    final BaseActionBean localCommitBean=mMakeAction.createAction(String.valueOf(mGetSystemInfoBean.getBlockHeight()));
+                    mImpGetAction.receive(localCommitBean.getCommitData());
+                }
+                @Override
+                public void fail(Exception e) {
+                    receiveFail(new Exception("获取最新高度失败,请检查节点是否正常"));
+                }
+            };
+        }else{
+            MakeAction mMakeAction = new MakeAction(mAccountBean,actionType,coinLis,outList);
+            final BaseActionBean localCommitBean=mMakeAction.createAction(String.valueOf(blockHeight));
+            mImpGetAction.receive(localCommitBean.getCommitData());
+        }
     }
 
 
@@ -196,7 +215,7 @@ public abstract class StartTranfer {
         System.out.println(findCoin);
 
         doCommit(actionType);
-   }
+    }
 
 
 
@@ -205,33 +224,38 @@ public abstract class StartTranfer {
      * 做最后整合提交
      */
     public void doCommit(final int actionType){
-        //先从节点获取最新高度信息
-        new Request(ApiConfig.API_getSystemInfo) {
+        if(blockHeight == 0){//未输入自定义高度，去获取最新高度后再提交交易
+            //先从节点获取最新高度信息
+            new Request(ApiConfig.API_getSystemInfo) {
+                @Override
+                public void success(StringBuffer json) {
+                    GetSystemInfoBean.RecordBean mGetSystemInfoBean=JSON.parseObject(json.toString(), GetSystemInfoBean.class).getRecord();
+                    requestReceiveAction(actionType,mGetSystemInfoBean.getBlockHeight());
+                }
+                @Override
+                public void fail(Exception e) {
+                    receiveFail(new Exception("获取最新高度失败,请检查节点是否正常"));
+                }
+            };
+        }else{//已经输入自定义高度，则使用自定义的高度进行提交交易
+            requestReceiveAction(actionType,blockHeight);
+        }
+    }
+
+    private void requestReceiveAction(final int actionType,final long blockHeight){
+        MakeAction mMakeAction = new MakeAction(mAccountBean,actionType,coinLis,outList);
+        final BaseActionBean localCommitBean=mMakeAction.createAction(String.valueOf(blockHeight));
+        System.out.println("提交的目标数据："+localCommitBean.getCommitData());
+        //开始将Action序列化信息提交至节点
+        new Request(ApiConfig.API_receiveAction,ApiConfig.receiveAction(localCommitBean.getCommitData())) {
             @Override
             public void success(StringBuffer json) {
-                GetSystemInfoBean.RecordBean mGetSystemInfoBean=JSON.parseObject(json.toString(), GetSystemInfoBean.class).getRecord();
-
-                MakeAction mMakeAction = new MakeAction(mAccountBean,actionType,coinLis,outList);
-                final BaseActionBean localCommitBean=mMakeAction.createAction(String.valueOf(mGetSystemInfoBean.getBlockHeight()));
-
-                System.out.println("提交的目标数据："+localCommitBean.getCommitData());
-
-                //开始将Action序列化信息提交至节点
-                new Request(ApiConfig.API_receiveAction,ApiConfig.receiveAction(localCommitBean.getCommitData())) {
-                    @Override
-                    public void success(StringBuffer json) {
-                        receiveAction(localCommitBean,json);
-                    }
-
-                    @Override
-                    public void fail(Exception e) {
-                        receiveFail(e);
-                    }
-                };
+                receiveAction(localCommitBean,json);
             }
+
             @Override
             public void fail(Exception e) {
-                receiveFail(new Exception("获取最新高度失败,请检查节点是否正常"));
+                receiveFail(e);
             }
         };
     }

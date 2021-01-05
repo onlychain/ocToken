@@ -9,7 +9,7 @@ import java.util.List;
 
 public abstract class GetBlockData {
     private String height;
-    public abstract void getSuccess(List<String> tradList);
+    public abstract void getSuccess(StringBuffer json,List<String> tradList);
 
 
     public GetBlockData(String height) {
@@ -22,9 +22,9 @@ public abstract class GetBlockData {
         new Request(ApiConfig.API_queryBlock,ApiConfig.queryBlock(height)) {
             @Override
             public void success(StringBuffer json) {
-                System.out.println(json);
-                BlockBean.RecordBean mRecord=JSON.parseObject(json.toString(), BlockBean.class).getRecord();
-                getSuccess(mRecord.getTradingInfo());
+
+                BlockBean.RecordBean mRecord= JSON.parseObject(json.toString(), BlockBean.class).getRecord();
+                getSuccess(json,mRecord.getTradingInfo());
             }
             @Override
             public void fail(Exception e) {

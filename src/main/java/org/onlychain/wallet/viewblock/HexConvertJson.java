@@ -53,7 +53,7 @@ public class HexConvertJson {
         AnalysisBean.TradingBean mTradingBean=new AnalysisBean.TradingBean();
         List<AnalysisBean.TradingBean.VinBean> vinList=new ArrayList<>();
         List<AnalysisBean.TradingBean.VoutBean> voutList=new ArrayList<>();
-        for (int i=0;i<Leb128Utils.decodeUnsigned(getLebNum(headStr));i++)
+        for (int i = 0; i< Leb128Utils.decodeUnsigned(getLebNum(headStr)); i++)
         {
             AnalysisBean.TradingBean.VinBean vinObj=new AnalysisBean.TradingBean.VinBean();
             bodyStartIndex=bodyStartIndex+64;
@@ -81,7 +81,7 @@ public class HexConvertJson {
             voutObj.setValue(OcMath.toBigIntNoPrefix(valueHex).toString());
             bodyStartIndex=bodyStartIndex+valueHex.length();
             String addressStr=actionStr.substring(bodyStartIndex,bodyStartIndex+54);
-            voutObj.setAddress(addressStr.split("001976a914")[1].split("88ac")[0]);
+            voutObj.setAddress(addressStr.substring(10,40+10));
             bodyStartIndex=bodyStartIndex+addressStr.length();
 
             voutList.add(voutObj);
@@ -112,12 +112,12 @@ public class HexConvertJson {
 
 
 
-public String getJson(){
-    if(isTypes())
-        return  JSON.toJSONString(actionBaseBean);
-    else
-        return null;
-}
+    public String getJson(){
+        if(isTypes())
+            return  JSON.toJSONString(actionBaseBean);
+        else
+            return null;
+    }
 
     private String getLebNum(String startStr){
         int startIndex=startStr.length();
@@ -130,7 +130,7 @@ public String getJson(){
                 break;
             }
             else
-            startIndex=startIndex+2;
+                startIndex=startIndex+2;
         }
         return actionStr.substring(startStr.length(),endIndex);
     }
