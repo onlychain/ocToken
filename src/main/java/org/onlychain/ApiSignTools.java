@@ -13,7 +13,7 @@ public class ApiSignTools {
     public static void main(String[] args) {
         String pri="c7c0e51106b3a63a9ccf547c1f391493e13a12950c7d25b6ecbcc8bff112d9ab";
         AccountBean mAccountBean= WalletUtils.createAccount(OcMath.hexStringToByteArray(pri));
-        String body="伟大";
+        String body="对外";
         String  signAsStr=new BaseActionBean().makeSign(mAccountBean.getPrivateKeyBin(),body);
 
         boolean s=new BaseActionBean().checkSign(mAccountBean.getPublicKeyBin(),body,signAsStr);

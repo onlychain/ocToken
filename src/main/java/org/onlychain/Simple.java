@@ -98,6 +98,8 @@ public class Simple {
         System.out.println("验证指定签名的合法性："+mOpenInterest.checkSign(mAccountBean.getPublicKeyBin(),mOpenInterest.getMessage(),mOpenInterest.getSignStr()));
 
 
+
+
         //TODO 提交签名至主网,谨慎开启
 /*        new Request(ApiConfig.API_receiveAction,ApiConfig.receiveAction(mOpenInterest.getCommitData())) {
             @Override
