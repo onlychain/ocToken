@@ -40,7 +40,7 @@ public class BaseActionBean {
     }*/
 
     public boolean checkSign(byte[] publicKeyBin,String message,String sigStr){
-        if (Secp256k1.verify(PublicKey.parse(publicKeyBin), Hash.sha256(Hash.sha256(OcMath.hexStringToByteArray(message))), Signature.parse(OcMath.hexStringToByteArray(sigStr))))
+        if (Secp256k1.verify(PublicKey.parse(publicKeyBin), Hash.sha256(Hash.sha256(message.getBytes())), Signature.parse(OcMath.hexStringToByteArray(sigStr))))
             return true;
         else
             return false;
@@ -54,7 +54,7 @@ public class BaseActionBean {
      * @return
      */
     public String makeSign(byte[] privateKeyBin,String message){
-        return OcMath.toHexStringNoPrefix(Secp256k1.sign(privateKeyBin,Hash.sha256(Hash.sha256(OcMath.hexStringToByteArray(message)))).serialize());
+        return OcMath.toHexStringNoPrefix(Secp256k1.sign(privateKeyBin,Hash.sha256(Hash.sha256(message.getBytes()))).serialize());
     }
 
     public String getCommitData() {
