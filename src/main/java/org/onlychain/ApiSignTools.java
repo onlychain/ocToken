@@ -13,11 +13,19 @@ public class ApiSignTools {
     public static void main(String[] args) {
         String pri="c7c0e51106b3a63a9ccf547c1f391493e13a12950c7d25b6ecbcc8bff112d9ab";
         AccountBean mAccountBean= WalletUtils.createAccount(OcMath.hexStringToByteArray(pri));
-        String body="对外";
-        String  signAsStr=new BaseActionBean().makeSign(mAccountBean.getPrivateKeyBin(),body);
 
-        boolean s=new BaseActionBean().checkSign(mAccountBean.getPublicKeyBin(),body,signAsStr);
+        //OC原生消息签名,消息仅支持16进制(考虑IOS等前端兼容问题)
+        String body="0123456789abcdef";
+        String  signAsStr=new BaseActionBean().makeSign(mAccountBean.getPrivateKeyBin(),body);
+        boolean s=new BaseActionBean().checkSign(OcMath.hexStringToByteArray(mAccountBean.getPublicKey()),body,signAsStr);
         System.out.println(s);
-        System.out.println(signAsStr);
+
+
+
+        //自定义消息签名
+        String body2="我是自定义消息";
+        String  signAsStr2=new BaseActionBean().makeApiSign(mAccountBean.getPrivateKeyBin(),body2);
+        boolean s2=new BaseActionBean().checkApiSign(OcMath.hexStringToByteArray(mAccountBean.getPublicKey()),body2,signAsStr2);
+        System.out.println(s2);
     }
 }
